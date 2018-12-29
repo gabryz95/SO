@@ -3,13 +3,33 @@
 
 #include <setjmp.h>
 #include <stdbool.h>
-#include "bthread.h"
 #include "tqueue.h"
 
 #define save_context(CONTEXT) sigsetjmp(CONTEXT, 1)
 #define restore_context(CONTEXT) siglongjmp(CONTEXT, 1)
 #define QUANTUM_USEC 20000
 #define CUSHION_SIZE 10000
+
+/* This structure specifies the signature of the thread body routine. */
+typedef void *(*bthread_routine)(void *);
+
+/* Type for thread context */
+typedef unsigned long int bthread_t;
+
+/* Container for thread context. This structure can't change, otherwise there could be conflicts. */
+typedef enum {
+    __BTHREAD_EXITED = 0,
+    __BTHREAD_ZOMBIE,
+    __BTHREAD_UNINITIALIZED,
+    __BTHREAD_READY,
+    __BTHREAD_BLOCKED,
+    __BTHREAD_SLEEPING
+} bthread_state;
+
+
+/* This structure store additional thread attribute. */
+typedef struct {
+} bthread_attr_t;
 
 /* This structure contains all the information regarding a thread (an identifier, the body routine and its argument,
  * an execution state, attributes, stack context, and a return value). */

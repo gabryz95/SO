@@ -1,9 +1,12 @@
 #include "tcondition.h"
 
 int bthread_cond_init(bthread_cond_t *c, const bthread_condattr_t *attr) {
-    assert(c != NULL);
-    c->waiting_lits = NULL;
-    return 0;
+    if (c == NULL) {
+        c = (bthread_cond_t *) malloc(sizeof(bthread_cond_t));
+        c->waiting_lits = NULL;
+        return 0;
+    }
+    return 1;
 }
 
 int bthread_cond_destroy(bthread_cond_t *c) {
