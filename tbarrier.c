@@ -14,7 +14,7 @@ int bthread_barrier_destroy(bthread_barrier_t *b) {
     return 0;
 }
 
-int bthread_wait(bthread_barrier_t *b) {
+int bthread_barrier_wait(bthread_barrier_t *b) {
     bthread_block_timer_signal();
     volatile __bthread_scheduler_private *my_scheduler = bthread_get_scheduler();
     volatile __bthread_private *my_thread = (__bthread_private *) tqueue_get_data(my_scheduler->current_item);

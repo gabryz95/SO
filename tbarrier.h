@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include "tqueue.h"
+#include "bthread.h"
 #include "bthread_private.h"
 
 typedef struct {
@@ -19,7 +20,7 @@ int bthread_barrier_init(bthread_barrier_t *b, const bthread_barrierattr_t *attr
 
 int bthread_barrier_destroy(bthread_barrier_t *b);
 
-int bthread_wait(bthread_barrier_t *b);
+int bthread_barrier_wait(bthread_barrier_t *b);
 
 
 #endif //OPERATIVE_SISTEM_TBARRIER_H
