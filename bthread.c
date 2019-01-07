@@ -1,4 +1,15 @@
+#include <setjmp.h>
+#include <stdlib.h>
+#include <stdarg.h>
+#include <sys/time.h>
+#include <signal.h>
+#include <printf.h>
 #include "bthread.h"
+#include "bthread_private.h"
+#include "tqueue.h"
+
+
+size_t STACK_SIZE = 1024;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -27,6 +38,7 @@ int bthread_create(bthread_t *bthread, const bthread_attr_t *attr, void *(*start
     bthread_private->tid = tqueue_enqueue(&my_scheduler->queue, bthread_private);
     *bthread = bthread_private->tid;
     my_scheduler->current_item = my_scheduler->queue;
+    printf("(CREATE) %d\n", (int) (arg + 1));
     return (int) bthread_private->tid;
 }
 
@@ -47,46 +59,30 @@ double get_current_time_millis() {
 //    volatile __bthread_scheduler_private *myScheduler = bthread_get_scheduler();
 //    myScheduler->current_item = myScheduler->queue;
 //    save_context(myScheduler->context);
+//    bthread_initialize_next();
 //    if (bthread_check_if_zombie(bthread, retval)) return 0;
 //    __bthread_private *tp;
 //    do {
 //        myScheduler->current_item = tqueue_at_offset(myScheduler->current_item, 1);
 //        tp = (__bthread_private *) tqueue_get_data(myScheduler->current_item);
 //    } while (tp->state != __BTHREAD_READY);
-//    if (tp->stack) {
 //        restore_context(tp->context);
-//    } else {
-//        tp->stack = (char *) malloc(sizeof(char) * STACK_SIZE);
-//        unsigned long target = (unsigned long) (tp->stack + STACK_SIZE - 1);
-//#if __APPLE__
-//        // OSX requires 16 bytes aligned stack
-//        target -= (target % 16);
-//#endif
-//#if __x86_64__
-//        asm __volatile__("movq %0, %%rsp"::"r"((intptr_t) target));
-//#else
-//        asm __volatile__("movl %0, %%esp"::"r"((intptr_t) target));
-//#endif
-//        bthread_exit(tp->body(tp->arg));
-//    }
+//
 //}
 int bthread_join(bthread_t bthread, void **retval) {
     bthread_block_timer_signal();
     bthread_setup_timer();
-    volatile __bthread_scheduler_private *scheduler = bthread_get_scheduler();
-    if (save_context(scheduler->context) == 0) {
+    volatile __bthread_scheduler_private *my_scheduler = bthread_get_scheduler();
+    my_scheduler->current_item = my_scheduler->queue;
+    if (save_context(my_scheduler->context) == 0) {
         bthread_initialize_next();
-        restore_context(scheduler->context);
     } else {
-        __bthread_private *tp;
+        volatile __bthread_private *tp;
         do {
             if (bthread_check_if_zombie(bthread, retval)) return 0;
-
-            scheduler->scheduling_routine();
-
-
-            tp = (__bthread_private *) tqueue_get_data(scheduler->current_item);
-            volatile __bthread_private *thread = tqueue_get_data(scheduler->current_item);
+            my_scheduler->scheduling_routine();
+            tp = (__bthread_private *) tqueue_get_data(my_scheduler->current_item);
+            volatile __bthread_private *thread = tqueue_get_data(my_scheduler->current_item);
             //thread sleep implementation
             if (thread->state == __BTHREAD_SLEEPING) {
                 if (thread->wake_up_time <= get_current_time_millis()) {
@@ -94,8 +90,11 @@ int bthread_join(bthread_t bthread, void **retval) {
                 }
             }
         } while (tp->state != __BTHREAD_READY);
+        printf("(INSCHEDULER)\n(RESCHEDULING)\n");
+        printf("(SCHEDULING) %d\n", (int) (tp->arg + 1));
         restore_context(tp->context);
     }
+
 }
 
 /*
@@ -113,7 +112,7 @@ void bthread_yield() {
     //get the scheduler
     volatile __bthread_scheduler_private *scheduler = bthread_get_scheduler();
     volatile __bthread_private *thread = tqueue_get_data(scheduler->current_item);
-
+    printf("(YIELD) %d\n", (int) (thread->arg + 1));
     if (!save_context(thread->context)) {
         bthread_initialize_next();
         restore_context(scheduler->context);
@@ -129,6 +128,7 @@ void bthread_exit(void *retval) {
     volatile __bthread_private *actualThread = tqueue_get_data(myScheduler->current_item);
     actualThread->retval = retval;
     actualThread->state = __BTHREAD_ZOMBIE;
+    printf("(ExIT) %d 0x%x\n", (int) (actualThread->arg + 1), (unsigned int) retval);
     bthread_yield();
 }
 
@@ -148,6 +148,7 @@ void bthread_sleep(double ms) {
     //imposto il suo tempo di risveglio a ms + get_cuurent_time()
     thread->wake_up_time = get_current_time_millis() + ms;
     //rilascio la CPU
+    printf("(SLEEPING) %d\n", (int) (thread->arg + 1));
     bthread_yield();
 }
 
@@ -181,15 +182,19 @@ void set_scheduler(scheduler_type schedulerType) {
 
     switch (schedulerType) {
         case __RANDOM_SCHEDULER:
-            my_scheduler->scheduling_routine = random_scheduling();
+            my_scheduler->scheduling_routine = (bthread_scheduling_routine) random_scheduling;
             break;
         case __PRIORITY_SCHEDULER:
-            my_scheduler->scheduling_routine = priority_scheduling();
+            my_scheduler->scheduling_routine = (bthread_scheduling_routine) priority_scheduling;
             break;
         case __ROUNDROBIN_SCHEDULER:
-            my_scheduler->scheduling_routine = round_robin_scheduler();
+            my_scheduler->scheduling_routine = (bthread_scheduling_routine) round_robin_scheduler;
+            break;
+        case __LOTTERY_SCHEDULER:
+            my_scheduler->scheduling_routine = (bthread_scheduling_routine) lottery_scheduler;
+            break;
         default:
-            my_scheduler->scheduling_routine = round_robin_scheduler();
+            my_scheduler->scheduling_routine = (bthread_scheduling_routine) round_robin_scheduler;
             break;
     }
 }
@@ -213,8 +218,9 @@ __bthread_scheduler_private *bthread_get_scheduler() {
     if (my_scheduler == NULL) {
         my_scheduler = malloc(sizeof(__bthread_scheduler_private));
         my_scheduler->queue = NULL;
-        my_scheduler->scheduling_routine = (bthread_scheduling_routine) round_robin_scheduler;
+        my_scheduler->scheduling_routine = (bthread_scheduling_routine) priority_scheduling;
     }
+
     return my_scheduler;
 }
 
@@ -248,6 +254,7 @@ void bthread_create_cushion(__bthread_private *t_data) {
     unsigned char data_cushion[CUSHION_SIZE];
     data_cushion[CUSHION_SIZE - 1] = data_cushion[0];
     t_data->state = __BTHREAD_READY;
+    printf("(READY) %d\n", (int) (t_data->arg + 1));
     bthread_exit(t_data->body(t_data->arg));
 }
 
@@ -268,6 +275,7 @@ int bthread_check_if_zombie(bthread_t bthread, void **retval) {
     __bthread_private *thread = tqueue_get_data(scheduler->current_item);
     if (thread->state == __BTHREAD_ZOMBIE) {
         thread->state = __BTHREAD_EXITED;
+        bthread_exit(retval);
         if (retval != NULL) {
             *retval = thread->retval;
         }

@@ -1,11 +1,7 @@
 #ifndef OPERATIVE_SISTEM_TBARRIER_H
 #define OPERATIVE_SISTEM_TBARRIER_H
 
-#include <stdlib.h>
-#include <assert.h>
 #include "tqueue.h"
-#include "bthread.h"
-#include "bthread_private.h"
 
 typedef struct {
     TQueue waiting_list;

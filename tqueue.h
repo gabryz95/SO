@@ -1,8 +1,6 @@
 #ifndef OPERATIVE_SISTEM_TQUEUE_H
 #define OPERATIVE_SISTEM_TQUEUE_H
 
-#include <stdio.h>
-
 /* For usage*/
 typedef struct TQueueNode *TQueue;
 struct TQueueNode;

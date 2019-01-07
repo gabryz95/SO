@@ -1,14 +1,11 @@
 #ifndef OPERATIVE_SISTEM_TSEMAPHORE_H
 #define OPERATIVE_SISTEM_TSEMAPHORE_H
 
-#include <stdlib.h>
-#include <assert.h>
 #include "tqueue.h"
-#include "bthread_private.h"
 
 typedef struct {
     int value;
-    TQueue waiting_list;
+    TQueue *waiting_list;
 } bthread_sem_t;
 
 // pshared is ignored, defined for compatibility with pthread

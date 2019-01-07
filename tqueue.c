@@ -1,6 +1,7 @@
-#include "tqueue.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdio.h>
+#include "tqueue.h"
 
 /* Adds a new element at the end of the list, returns its position */
 unsigned long int tqueue_enqueue(TQueue *q, void *localData) {
@@ -26,38 +27,20 @@ unsigned long int tqueue_enqueue(TQueue *q, void *localData) {
 
 /* Removes and returns the element at the beginning of the list, NULL if the queue is empty */
 void *tqueue_pop(TQueue *q) {
-//    if (q == NULL)
-//        return NULL;
-//
-//    TQueue element = *q;
-//    void *value = element->data;
-//    TQueue head = *q;
-//    TQueue tmp = *q;
-//
-//    if (tmp->next == head) {
-//        TQueue *toRemove = (TQueue *) head;
-//        *q = NULL;
-//        free(toRemove);
-//        return value;
-//
-//    }
-//    while (tmp->next != head) {
-//        tmp = tmp->next;
-//    }
-//    *q = head->next;
-//    tmp->next = *q;
-//    free(head);
-//    return value;
-    if (*q == NULL) {
+
+    if (*q == NULL)
         return NULL;
-    } else {
+    else {
+
         TQueueNode *old_head = *q;
         void *ret_val = old_head->data;
+
         if (old_head->next == old_head) {
             *q = NULL;
         } else {
             *q = old_head->next;
             TQueueNode *head = *q;
+
             while (head->next != old_head) {
                 head = head->next;
             }

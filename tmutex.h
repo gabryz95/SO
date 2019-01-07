@@ -1,9 +1,7 @@
 #ifndef OPERATIVE_SISTEM_TMUTEX_H
 #define OPERATIVE_SISTEM_TMUTEX_H
 
-#include <assert.h>
 #include "tqueue.h"
-#include "bthread_private.h"
 
 typedef struct {
     void *owner;

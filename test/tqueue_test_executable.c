@@ -1,4 +1,7 @@
+#include <stdlib.h>
+#include <printf.h>
 #include "../tqueue_test.h"
+
 
 int mainc() {
 

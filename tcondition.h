@@ -1,11 +1,8 @@
 #ifndef OPERATIVE_SISTEM_TCONDITION_H
 #define OPERATIVE_SISTEM_TCONDITION_H
 
-#include <stdlib.h>
-#include <assert.h>
 #include "tqueue.h"
 #include "tmutex.h"
-#include "bthread_private.h"
 
 typedef struct {
     TQueue waiting_lits;
