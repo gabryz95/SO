@@ -9,14 +9,11 @@
 #define save_context(CONTEXT) sigsetjmp(CONTEXT, 1)
 #define restore_context(CONTEXT) siglongjmp(CONTEXT, 1)
 #define QUANTUM_USEC 20000
-#define CUSHION_SIZE 10000
 
 /* Container for thread context. This structure can't change, otherwise there could be conflicts. */
 typedef enum {
-    __BTHREAD_EXITED = 0,
+    __BTHREAD_READY = 0,
     __BTHREAD_ZOMBIE,
-    __BTHREAD_UNINITIALIZED,
-    __BTHREAD_READY,
     __BTHREAD_BLOCKED,
     __BTHREAD_SLEEPING
 } bthread_state;
@@ -54,10 +51,6 @@ __bthread_scheduler_private *bthread_get_scheduler();
 
 void bthread_cleanup();
 
-static void bthread_create_cushion(__bthread_private *t_data);
-
-static void bthread_initialize_next();
-
 static int bthread_check_if_zombie(bthread_t bthread, void **retval);
 
 static void bthread_setup_timer();
@@ -65,5 +58,9 @@ static void bthread_setup_timer();
 void bthread_block_timer_signal();
 
 void bthread_unblock_timer_signal();
+
+void bthread_set_priority(__bthread_private *bthread_private, int priority);
+
+double get_current_time_millis();
 
 #endif //OPERATIVE_SISTEM_BTHREAD_PRIVATE_H

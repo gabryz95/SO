@@ -14,7 +14,6 @@ int bthread_barrier_init(bthread_barrier_t *b, const bthread_barrierattr_t *attr
 
 int bthread_barrier_destroy(bthread_barrier_t *b) {
     assert(tqueue_size(b->waiting_list) == 0);
-    free(b->waiting_list);
     return 0;
 }
 
@@ -31,7 +30,7 @@ int bthread_barrier_wait(bthread_barrier_t *b) {
         bthread_yield();
     } else {
         b->count++;
-        printf("(BARRIERBLOCKED) %d %#x %d %d\n", (int) (my_thread->arg + 1), &b, b->count, b->barrier_size);
+        printf("(BARRIERUNBLOCKED) %d %#x %d %d\n", (int) (my_thread->arg + 1), &b, b->count, b->barrier_size);
         int size = (int) tqueue_size(b->waiting_list);
         for (int i = 0; i < size; ++i) {
             __bthread_private *tmp_thread2 = tqueue_pop(&b->waiting_list);

@@ -16,7 +16,6 @@ int bthread_sem_init(bthread_sem_t *m, int pshared, int value) {
 
 int bthread_sem_destroy(bthread_sem_t *m) {
     assert(tqueue_size(m->waiting_list) == 0);
-    free(m->waiting_list);
     return 0;
 }
 

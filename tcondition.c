@@ -11,7 +11,6 @@ int bthread_cond_init(bthread_cond_t *c, const bthread_condattr_t *attr) {
 
 int bthread_cond_destroy(bthread_cond_t *c) {
     assert(tqueue_size(c->waiting_lits) == 0);
-    free(c->waiting_lits);
     return 0;
 }
 

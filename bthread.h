@@ -6,11 +6,6 @@
  * There is no state to represents a running thread because this information is maintained directly by the scheduler
  * */
 
-//vecchia primitiva, adesso sostiyuita dalla funzione bthread_printf.
-/*#define bthread_printf(...)\
-printf(__VA_ARGS__);\
-bthread_yield();*/
-
 #include "scheduler.h"
 
 /* This structure specifies the signature of the thread body routine. */
@@ -25,8 +20,7 @@ typedef void (*bthread_scheduling_routine)();
 typedef struct {
 } bthread_attr_t;
 
-int bthread_create(bthread_t *bthread, const bthread_attr_t *attr, void *(*start_routine)(void *), void *arg,
-                   unsigned int priority);
+int bthread_create(bthread_t *bthread, const bthread_attr_t *attr, void *(*start_routine)(void *), void *arg);
 
 int bthread_join(bthread_t bthread, void **retval);
 

@@ -57,7 +57,7 @@ int bthread_mutex_unlock(bthread_mutex_t *m) {
     assert(m->owner == tqueue_get_data(my_scheduler->current_item));
     volatile __bthread_private *my_thread = m->owner;
     if (my_thread != NULL) {
-        //bthread_printf("(MUTRELEASE) %d %#x\n", (int) (my_thread->arg + 1), (unsigned int) &m);
+        bthread_printf("(MUTRELEASE) %d %#x\n", (int) (my_thread->arg + 1), (unsigned int) &m);
         my_thread->state = __BTHREAD_READY;
         if (tqueue_size(m->waiting_list) > 0) {
             m->owner = tqueue_pop((TQueue *) m->waiting_list);

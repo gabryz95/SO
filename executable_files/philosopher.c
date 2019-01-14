@@ -88,7 +88,7 @@ int main(int argc, char *argv[]) {
     bthread_t philosophers[N];
     int i;
     for (i = 0; i < N; i++) {
-        bthread_create(&philosophers[i], NULL, philosopher, (void *) (intptr_t) i, 2);
+        bthread_create(&philosophers[i], NULL, philosopher, (void *) (intptr_t) i);
     }
 
     for (i = 0; i < N; i++) {
