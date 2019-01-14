@@ -47,12 +47,13 @@ int bthread_join(bthread_t bthread, void **retval) {
     volatile __bthread_scheduler_private *scheduler = bthread_get_scheduler();
     scheduler->current_item = scheduler->queue;
     save_context(scheduler->context);
+    bthread_printf("(INSCHEDULER)\n(RESCHEDULING)\n");
     if (bthread_check_if_zombie(bthread, retval)) return 0;
     __bthread_private *tp;
     do {
         //scheduler->current_item = tqueue_at_offset(scheduler->current_item, 1);
-        scheduler->scheduling_routine();
         tp = (__bthread_private *) tqueue_get_data(scheduler->current_item);
+        scheduler->scheduling_routine();
     } while (tp->state != __BTHREAD_READY);
     bthread_printf("(SCHEDULING) %d\n", (tp->tid + 1));
     if (tp->stack) {
@@ -82,7 +83,6 @@ void bthread_yield() {
     volatile __bthread_private *thread = tqueue_get_data(scheduler->current_item);
     bthread_printf("(YIELD) %d\n", (int) (thread->arg + 1));
     if (!save_context(thread->context)) {
-        bthread_printf("(INSCHEDULER)\n(RESCHEDULING)\n");
         restore_context(scheduler->context);
     }
     bthread_unblock_timer_signal();

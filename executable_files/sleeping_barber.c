@@ -70,9 +70,9 @@
 //    bthread_sem_init(&customers_semaphore, 0, 0);
 //    bthread_sem_init(&barber_semaphore, 0, 0);
 //
-//    bthread_create(&b, NULL, &barber, (void *) "Figaro", 0);
-//    bthread_create(&c1, NULL, &customer, (void *) "Count Almaviva", 0);
-//    bthread_create(&c2, NULL, &customer, (void *) "Rosina", 0);
+//    bthread_create(&b, NULL, &barber, (void *) "Figaro");
+//    bthread_create(&c1, NULL, &customer, (void *) "Count Almaviva");
+//    bthread_create(&c2, NULL, &customer, (void *) "Rosina");
 //
 //    bthread_join(b, NULL);
 //    bthread_join(c1, NULL);
@@ -85,8 +85,3 @@
 //
 //    return 0;
 //}
-//
-//
-//
-//
-//

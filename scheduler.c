@@ -35,9 +35,11 @@ void *priority_scheduling() {
             if (my_thread->priority < priority) {
                 priority = (volatile unsigned int) my_thread->priority;
                 tQueue = tmp;
+                my_scheduler->current_item = tQueue;
             }
     }
-    my_scheduler->current_item = tQueue;
+    //TODO:: è NULL perchè non è entrato dentro if (my_thread->priority < priority)
+    //my_scheduler->current_item = tQueue;
 }
 
 void *round_robin_scheduler() {
@@ -98,7 +100,4 @@ void task_set_priority(int priority) {
     volatile __bthread_scheduler_private *my_scheduler = bthread_get_scheduler();
     volatile __bthread_private *my_thread = tqueue_get_data(my_scheduler->current_item);
     my_thread->priority = priority;
-
 }
-
-
